@@ -15,9 +15,9 @@ API for Web Map Service (WMS) methods and metadata.
 Currently supports only version 1.1.1 of the WMS protocol.
 """
 
-from .map import wms111, wms130
+from .map import wms111, wms130, wmsqgis
 from .util import clean_ows_url, Authentication
-
+import re
 
 def WebMapService(url, version='1.1.1', xml=None, username=None, password=None,
                   parse_remote_metadata=False, timeout=30, headers=None, auth=None):
@@ -45,7 +45,11 @@ def WebMapService(url, version='1.1.1', xml=None, username=None, password=None,
         auth = Authentication(username, password)
     clean_url = clean_ows_url(url)
 
-    if version in ['1.1.1']:
+    if re.search("qgis_mapserv.fcgi", url) and re.search("getprojectsettings", url, re.IGNORECASE):
+        return wmsqgis.WebMapService_QGIS(
+            url, version=version, xml=xml, parse_remote_metadata=parse_remote_metadata,
+            timeout=timeout, auth=auth)
+    elif version in ['1.1.1']:
         return wms111.WebMapService_1_1_1(
             clean_url, version=version, xml=xml, parse_remote_metadata=parse_remote_metadata,
             timeout=timeout, auth=auth)
