@@ -393,10 +393,19 @@ class ContentMetadata(AbstractContentMetadata):
             except TypeError:
                 self.boundingBoxWGS84 = None
         # crs options
-        self.crsOptions = [
-            Crs(srs.text)
-            for srs in elem.findall(nspath_eval("wfs:OtherSRS", namespaces))
-        ]
+        #self.crsOptions = [
+        #    Crs(srs.text)
+        #    for srs in elem.findall(nspath_eval("wfs:OtherSRS", namespaces))
+        #]
+
+        #
+        # Support for QGIS Server: for some reason, OtherSRS maybe empty
+        #
+        self.crsOptions = []
+        for srs in elem.findall(nspath_eval("wfs:OtherSRS", namespaces)):
+            if srs.text is not None:
+                self.crsOptions.append(Crs(srs.text))
+
         dsrs = testXMLValue(elem.find(nspath_eval("wfs:DefaultSRS", namespaces)))
         if dsrs is not None:  # first element is default srs
             self.crsOptions.insert(0, Crs(dsrs))
